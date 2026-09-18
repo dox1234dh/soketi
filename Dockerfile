@@ -1,20 +1,17 @@
-# Sử dụng đúng bản Node 18 Alpine (Bản uWS của Soketi tương thích tốt nhất với Node 18)
+# Sử dụng base image Node 18 Alpine nhẹ và ổn định
 FROM node:18-alpine
 
-# Cài đặt đầy đủ các gói compiler thiết yếu để biên dịch uWebSockets.js
+# Cài đặt các công cụ biên dịch mã nguồn cần thiết cho Alpine Linux
 RUN apk add --no-cache python3 make g++ gcc libc-dev git
 
-# Cấu hình để npm bỏ qua lỗi quyền khi cài đặt global bằng quyền root
-RUN npm config set unsafe-perm true
+# Cài đặt Soketi bằng cách truyền cờ bypass quyền trực tiếp vào câu lệnh
+RUN npm install -g @soketi/soketi --unsafe-perm=true
 
-# Tiến hành cài đặt Soketi
-RUN npm install -g @soketi/soketi
-
-# Chuyển quyền sang user 'node' để an toàn cho Kubernetes (Non-root)
+# Chuyển sang user node (non-root) để bảo mật an toàn tối đa cho Kubernetes
 USER node
 
 # Mở cổng mặc định
 EXPOSE 6001
 
-# Lệnh khởi chạy
+# Lệnh chạy máy chủ Soketi
 CMD ["soketi", "start"]
