@@ -1,17 +1,20 @@
-# Sử dụng base image Node.js Alpine để giảm dung lượng xuống mức tối thiểu (~150MB)
+# Sử dụng đúng bản Node 18 Alpine (Bản uWS của Soketi tương thích tốt nhất với Node 18)
 FROM node:18-alpine
 
-# Cài đặt các công cụ build cần thiết để biên dịch thư viện C (như uWebSockets)
-RUN apk add --no-cache python3 make g++
+# Cài đặt đầy đủ các gói compiler thiết yếu để biên dịch uWebSockets.js
+RUN apk add --no-cache python3 make g++ gcc libc-dev git
 
-# Cài đặt phiên bản mới nhất của Soketi
+# Cấu hình để npm bỏ qua lỗi quyền khi cài đặt global bằng quyền root
+RUN npm config set unsafe-perm true
+
+# Tiến hành cài đặt Soketi
 RUN npm install -g @soketi/soketi
 
-# Chuyển sang user 'node' có sẵn để tuân thủ bảo mật khắt khe của Kubernetes (Non-root user)
+# Chuyển quyền sang user 'node' để an toàn cho Kubernetes (Non-root)
 USER node
 
-# Cổng mặc định
+# Mở cổng mặc định
 EXPOSE 6001
 
-# Lệnh chạy mặc định
+# Lệnh khởi chạy
 CMD ["soketi", "start"]
