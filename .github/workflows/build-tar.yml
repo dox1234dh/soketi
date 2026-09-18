@@ -1,0 +1,31 @@
+name: Build and Export Soketi Tar
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # Cho phép bạn bấm nút chạy lại thủ công khi cần
+
+jobs:
+  build-and-save:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Export to Docker tar
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          tags: soketi:latest
+          outputs: type=docker,dest=/tmp/soketi-latest.tar
+
+      - name: Upload Artifact (Tạo link tải file)
+        uses: actions/upload-artifact@v4
+        with:
+          name: soketi-docker-image
+          path: /tmp/soketi-latest.tar
+          retention-days: 5 # File sẽ tự xóa sau 5 ngày để tiết kiệm dung lượng
